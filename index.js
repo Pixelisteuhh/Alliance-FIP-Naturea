@@ -1,5 +1,12 @@
 const Discord = require('discord.js');
 const keep_alive = require('./keep_alive.js');
+const { readdirSync } = require("fs");
+const db = require('quick.db');
+const ms = require("ms");
+const { MessageEmbed } = require('discord.js');
+const { login } = require("./util/login.js");
+const { token } = require("./util/token.js"); // Assurez-vous que le fichier token.js exporte le token correctement
+
 const client = new Discord.Client({
     fetchAllMembers: true,
     partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'GUILD_PRESENCES', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_VOICE_STATES'],
@@ -21,13 +28,10 @@ const client = new Discord.Client({
         Discord.Intents.FLAGS.GUILD_WEBHOOKS,
     ]
 });
-const { readdirSync } = require("fs");
-const db = require('quick.db');
-const ms = require("ms");
-const { MessageEmbed } = require('discord.js');
-const { login } = require("./util/login.js");
 
 client.commands = new Discord.Collection();
+
+login(client);
 
 process.on("unhandledRejection", err => {
     if (err.message) return;
@@ -66,7 +70,7 @@ loadCommands();
 client.on('messageCreate', async (message) => {
     if (message.channel.type === 'DM' && !message.author.bot) {
         console.log("DM from user:", message.author.tag);
-        const guild = client.guilds.cache.get('YOUR_GUILD_ID'); // Remplacez par votre ID de serveur
+        const guild = client.guilds.cache.get('1266728421468143717'); // Remplacez par votre ID de serveur
         if (!guild) {
             console.error("Guild not found");
             return;
@@ -85,7 +89,7 @@ client.on('messageCreate', async (message) => {
                         deny: ['VIEW_CHANNEL'],
                     },
                     {
-                        id: 'YOUR_MODERATOR_ROLE_ID', // Remplacez par l'ID de votre rôle de modérateur
+                        id: '1266729866221588512', // Remplacez par l'ID de votre rôle de modérateur
                         allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
                     }
                 ],
@@ -128,4 +132,4 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.login(login);
+client.login(token); // Utilisation du token depuis token.js
