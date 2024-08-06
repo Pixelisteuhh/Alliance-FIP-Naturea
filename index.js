@@ -30,7 +30,6 @@ const client = new Discord.Client({
 const {
 	readdirSync
 } = require("fs")
-const db = require('quick.db')
 const ms = require("ms")
 const {
 	MessageEmbed
