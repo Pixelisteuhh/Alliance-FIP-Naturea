@@ -129,5 +129,3 @@ client.on('messageCreate', async (message) => {
         }
     }
 });
-
-client.login(token); // Utilisation du token depuis token.js
