@@ -1,35 +1,41 @@
-const { Client, Intents, MessageEmbed, Permissions } = require('discord.js');
-const { readdirSync } = require('fs');
-const db = require('quick.db');
-const ms = require('ms');
-const keep_alive = require('./keep_alive.js'); // Assuming you have a keep_alive.js file for keeping the bot alive.
-require('dotenv').config(); // For environment variables
-
-const client = new Client({
+const Discord = require('discord.js');
+const keep_alive = require('./keep_alive.js');
+const client = new Discord.Client({
     fetchAllMembers: true,
     partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'GUILD_PRESENCES', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_VOICE_STATES'],
     intents: [
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-        Intents.FLAGS.DIRECT_MESSAGE_TYPING,
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_BANS,
-        Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
-        Intents.FLAGS.GUILD_INTEGRATIONS,
-        Intents.FLAGS.GUILD_INVITES,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_MESSAGE_TYPING,
-        Intents.FLAGS.GUILD_PRESENCES,
-        Intents.FLAGS.GUILD_VOICE_STATES,
-        Intents.FLAGS.GUILD_WEBHOOKS,
+        Discord.Intents.FLAGS.DIRECT_MESSAGES,
+        Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+        Discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+        Discord.Intents.FLAGS.GUILDS,
+        Discord.Intents.FLAGS.GUILD_BANS,
+        Discord.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+        Discord.Intents.FLAGS.GUILD_INTEGRATIONS,
+        Discord.Intents.FLAGS.GUILD_INVITES,
+        Discord.Intents.FLAGS.GUILD_MEMBERS,
+        Discord.Intents.FLAGS.GUILD_MESSAGES,
+        Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+        Discord.Intents.FLAGS.GUILD_MESSAGE_TYPING,
+        Discord.Intents.FLAGS.GUILD_PRESENCES,
+        Discord.Intents.FLAGS.GUILD_VOICE_STATES,
+        Discord.Intents.FLAGS.GUILD_WEBHOOKS,
     ]
 });
+const { readdirSync } = require("fs");
+const db = require('quick.db');
+const ms = require("ms");
+const { MessageEmbed } = require('discord.js');
+const { login } = require("./util/login.js");
 
-const loadCommands = (dir = './commands/') => {
+process.on("unhandledRejection", err => {
+    if (err.message) return;
+    console.error("Uncaught Promise Error: ", err);
+});
+
+const loadCommands = (dir = "./commands/") => {
     readdirSync(dir).forEach(dirs => {
-        const commands = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith('.js'));
+        const commands = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith(".js"));
+
         for (const file of commands) {
             const getFileName = require(`${dir}/${dirs}/${file}`);
             client.commands.set(getFileName.name, getFileName);
@@ -38,44 +44,47 @@ const loadCommands = (dir = './commands/') => {
     });
 };
 
-const loadEvents = (dir = './events/') => {
+const loadEvents = (dir = "./events/") => {
     readdirSync(dir).forEach(dirs => {
-        const events = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith('.js'));
+        const events = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith(".js"));
+
         for (const event of events) {
             const evt = require(`${dir}/${dirs}/${event}`);
-            const evtName = event.split('.')[0];
+            const evtName = event.split(".")[0];
             client.on(evtName, evt.bind(null, client));
             console.log(`> Event Chargé ${evtName}`);
         }
     });
 };
 
-// Modmail functions
+loadEvents();
+loadCommands();
 
-async function handleDirectMessage(message) {
+// Modmail
+client.on('messageCreate', async (message) => {
     if (message.channel.type === 'DM' && !message.author.bot) {
-        console.log('DM from user:', message.author.tag);
-        const guild = client.guilds.cache.get('YOUR_GUILD_ID'); // Replace with your guild ID
+        console.log("DM from user:", message.author.tag);
+        const guild = client.guilds.cache.get('YOUR_GUILD_ID'); // Remplacez par votre ID de serveur
         if (!guild) {
-            console.error('Guild not found');
+            console.error("Guild not found");
             return;
         }
         console.log(`Found guild: ${guild.name}`);
 
         let channel = guild.channels.cache.find(ch => ch.name === `modmail-${message.author.id}`);
         if (!channel) {
-            console.log('Creating new modmail channel for:', message.author.tag);
+            console.log("Creating new modmail channel for:", message.author.tag);
             channel = await guild.channels.create(`modmail-${message.author.id}`, {
                 type: 'GUILD_TEXT',
                 topic: `Modmail thread with ${message.author.tag}`,
                 permissionOverwrites: [
                     {
                         id: guild.roles.everyone.id,
-                        deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                        deny: ['VIEW_CHANNEL'],
                     },
                     {
-                        id: 'MODERATOR_ROLE_ID', // Replace with your moderator role ID
-                        allow: [Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.READ_MESSAGE_HISTORY],
+                        id: 'YOUR_MODERATOR_ROLE_ID', // Remplacez par l'ID de votre rôle de modérateur
+                        allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
                     }
                 ],
             });
@@ -86,14 +95,14 @@ async function handleDirectMessage(message) {
         }
         await channel.send(`${message.author.tag}: ${message.content}`);
     }
-}
+});
 
-async function handleModmailMessage(message) {
+client.on('messageCreate', async (message) => {
     if (!message.guild || !message.channel.name.startsWith('modmail-') || message.author.bot) {
         return;
     }
 
-    console.log('Message in modmail channel:', message.channel.name);
+    console.log("Message in modmail channel:", message.channel.name);
 
     if (message.content === '=close') {
         const userId = message.channel.name.split('-')[1];
@@ -115,31 +124,6 @@ async function handleModmailMessage(message) {
             console.error(`Failed to fetch user with ID: ${userId}`);
         }
     }
-}
-
-client.on('ready', async () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    loadEvents();
-    loadCommands();
 });
 
-client.on('messageCreate', async (message) => {
-    console.log('Message received:', message.content);
-    await handleDirectMessage(message);
-    await handleModmailMessage(message);
-});
-
-client.login(process.env.BOT_TOKEN).catch((e) => {
-    if (e.toString().toLowerCase().includes('token')) {
-        throw new Error('An invalid bot token was provided!');
-    } else {
-        throw new Error('Privileged Gateway Intents are not enabled! Please enable them on the Discord Developer Portal.');
-    }
-});
-
-process.on('unhandledRejection', err => {
-    if (!err.message) return;
-    console.error('Uncaught Promise Error: ', err);
-});
-
-module.exports = client;
+client.login(token);
