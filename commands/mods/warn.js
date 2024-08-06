@@ -74,6 +74,9 @@ module.exports = {
                 }
                 if (db.fetch(`number.${message.guild.id}.${user.id}`) >= 3) {
                     try {
+                        message.channel.send(`${user} a été **kick** pour avoir dépassé(e) la limite de warn`);
+                        user.send(`Vous avez été **kick** de **Naturea** pour avoir dépassé(e) la limite de warn`)
+                        
                         await user.kick()
                         logschannel.send(new MessageEmbed()
                         .setColor(color)
