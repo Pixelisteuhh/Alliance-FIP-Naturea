@@ -1,10 +1,7 @@
 const Discord = require('discord.js');
 const keep_alive = require('./keep_alive.js');
-const db = require('quick.db');
-const ms = require("ms");
 const { MessageEmbed } = require('discord.js');
 const { login } = require("./util/login.js");
-const { token } = require("./util/token.js"); // Assurez-vous que le fichier token.js exporte le token correctement
 
 const client = new Discord.Client({
     fetchAllMembers: true,
@@ -30,6 +27,7 @@ const client = new Discord.Client({
 const {
 	readdirSync
 } = require("fs")
+const db = require('quick.db');
 const ms = require("ms")
 const {
 	MessageEmbed
