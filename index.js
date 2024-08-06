@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const keep_alive = require('./keep_alive.js');
-const { readdirSync } = require("fs");
 const db = require('quick.db');
 const ms = require("ms");
 const { MessageEmbed } = require('discord.js');
