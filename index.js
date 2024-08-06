@@ -27,6 +27,8 @@ const ms = require("ms");
 const { MessageEmbed } = require('discord.js');
 const { login } = require("./util/login.js");
 
+client.commands = new Discord.Collection();
+
 process.on("unhandledRejection", err => {
     if (err.message) return;
     console.error("Uncaught Promise Error: ", err);
