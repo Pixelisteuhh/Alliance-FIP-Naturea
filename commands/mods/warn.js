@@ -72,8 +72,15 @@ module.exports = {
                         .setDescription(`${message.author} a **warn** ${user} pour \`${res}\``)
                     )
                 }
-
-
+                if (db.fetch(`number.${message.guild.id}.${user.id}`) >= 3) {
+                    try {
+                        await user.kick()
+                        logschannel.send(new MessageEmbed()
+                        .setColor(color)
+                        .setDescription(`${user} a été **kick** pour avoir dépassé la limite de warn`)
+                    )
+                    } catch {}
+                }
             }
             if (args[0] === "list") {
                 const use = message.mentions.users.first() || client.users.cache.get(args[1]) || message.author
