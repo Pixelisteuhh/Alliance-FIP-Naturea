@@ -128,4 +128,4 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.login(token);
+client.login(login);
