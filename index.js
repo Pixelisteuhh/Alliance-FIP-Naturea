@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const keep_alive = require('./keep_alive.js');
-const { login } = require("./util/login.js");
 
 const client = new Discord.Client({
     fetchAllMembers: true,
